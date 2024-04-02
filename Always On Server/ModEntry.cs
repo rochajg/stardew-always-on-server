@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Always_On_Server.Framework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Netcode;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -140,11 +142,8 @@ namespace Always_On_Server
                 data.FishingLevel = Game1.player.FishingLevel;
                 data.CombatLevel = Game1.player.CombatLevel;
                 this.Helper.Data.WriteJsonFile($"data/{Constants.SaveFolderName}.json", data);
-                Game1.player.FarmingLevel = 10;
-                Game1.player.MiningLevel = 10;
-                Game1.player.ForagingLevel = 10;
-                Game1.player.FishingLevel = 10;
-                Game1.player.CombatLevel = 10;
+
+                updatePlayer(10, 10, 10, 10, 10);
                 ////////////////////////////////////////
                 IsAutomating = true;
                 Game1.chatBox.addInfoMessage("The host is in automatic mode!");
@@ -221,7 +220,7 @@ namespace Always_On_Server
                     Game1.chatBox.addInfoMessage("The host is in automatic mode!");
 
                     Game1.displayHUD = true;
-                    Game1.addHUDMessage(new HUDMessage("Auto Mode On!", ""));
+                    Game1.addHUDMessage(new HUDMessage("Auto Mode On!"));
 
                     Game1.options.pauseWhenOutOfFocus = false;
 
@@ -234,11 +233,8 @@ namespace Always_On_Server
                     data.FishingLevel = Game1.player.FishingLevel;
                     data.CombatLevel = Game1.player.CombatLevel;
                     this.Helper.Data.WriteJsonFile($"data/{Constants.SaveFolderName}.json", data);
-                    Game1.player.FarmingLevel = 10;
-                    Game1.player.MiningLevel = 10;
-                    Game1.player.ForagingLevel = 10;
-                    Game1.player.FishingLevel = 10;
-                    Game1.player.CombatLevel = 10;
+
+                    updatePlayer(10, 10, 10, 10, 10);
                     ///////////////////////////////////////////
 
                 }
@@ -250,15 +246,17 @@ namespace Always_On_Server
                     Game1.chatBox.addInfoMessage("The host has returned!");
 
                     Game1.displayHUD = true;
-                    Game1.addHUDMessage(new HUDMessage("Auto Mode Off!", ""));
+                    Game1.addHUDMessage(new HUDMessage("Auto Mode Off!"));
 
                     //set player levels to stored levels
                     var data = this.Helper.Data.ReadJsonFile<ModData>($"data/{Constants.SaveFolderName}.json") ?? new ModData();
-                    Game1.player.FarmingLevel = data.FarmingLevel;
-                    Game1.player.MiningLevel = data.MiningLevel;
-                    Game1.player.ForagingLevel = data.ForagingLevel;
-                    Game1.player.FishingLevel = data.FishingLevel;
-                    Game1.player.CombatLevel = data.CombatLevel;
+                    updatePlayer(
+                            data.FarmingLevel,
+                            data.MiningLevel,
+                            data.ForagingLevel,
+                            data.FishingLevel,
+                            data.CombatLevel
+                        );
                     //////////////////////////////////////
                 }
             }
@@ -282,7 +280,7 @@ namespace Always_On_Server
                         Game1.chatBox.addInfoMessage("The host is in automatic mode!");
 
                         Game1.displayHUD = true;
-                        Game1.addHUDMessage(new HUDMessage("Auto Mode On!", ""));
+                        Game1.addHUDMessage(new HUDMessage("Auto Mode On!"));
 
                         Game1.options.pauseWhenOutOfFocus = false;
                         // store levels, set in game levels to max
@@ -293,11 +291,8 @@ namespace Always_On_Server
                         data.FishingLevel = Game1.player.FishingLevel;
                         data.CombatLevel = Game1.player.CombatLevel;
                         this.Helper.Data.WriteJsonFile($"data/{Constants.SaveFolderName}.json", data);
-                        Game1.player.FarmingLevel = 10;
-                        Game1.player.MiningLevel = 10;
-                        Game1.player.ForagingLevel = 10;
-                        Game1.player.FishingLevel = 10;
-                        Game1.player.CombatLevel = 10;
+
+                        updatePlayer(10, 10, 10, 10, 10);
                         ///////////////////////////////////////////
                     }
                     else
@@ -308,14 +303,16 @@ namespace Always_On_Server
                         Game1.chatBox.addInfoMessage("The host has returned!");
 
                         Game1.displayHUD = true;
-                        Game1.addHUDMessage(new HUDMessage("Auto Mode Off!", ""));
+                        Game1.addHUDMessage(new HUDMessage("Auto Mode Off!"));
                         //set player levels to stored levels
                         var data = this.Helper.Data.ReadJsonFile<ModData>($"data/{Constants.SaveFolderName}.json") ?? new ModData();
-                        Game1.player.FarmingLevel = data.FarmingLevel;
-                        Game1.player.MiningLevel = data.MiningLevel;
-                        Game1.player.ForagingLevel = data.ForagingLevel;
-                        Game1.player.FishingLevel = data.FishingLevel;
-                        Game1.player.CombatLevel = data.CombatLevel;
+                        updatePlayer(
+                            data.FarmingLevel,
+                            data.MiningLevel,
+                            data.ForagingLevel,
+                            data.FishingLevel,
+                            data.CombatLevel
+                        );
                         //////////////////////////////////////
 
                     }
@@ -333,6 +330,16 @@ namespace Always_On_Server
             }
         }
 
+        private void updatePlayer(int farmingLevel, int miningLevel, int foragingLevel, int fishingLevel, int combatLevel)
+        {
+            int[] exp = { 0, 100, 280, 390, 530, 850, 1150, 1500, 2100, 3100, 5000 };
+
+            Game1.player.gainExperience(Farmer.farmingSkill, exp[farmingLevel]);
+            Game1.player.gainExperience(Farmer.miningSkill, exp[miningLevel]);
+            Game1.player.gainExperience(Farmer.foragingSkill, exp[foragingLevel]);
+            Game1.player.gainExperience(Farmer.fishingSkill, exp[fishingLevel]);
+            Game1.player.gainExperience(Farmer.combatSkill, exp[combatLevel]);
+        }
 
         private void FestivalsToggle()
         {
@@ -536,7 +543,7 @@ namespace Always_On_Server
                     {
                         luauSoupCountDown = this.Config.luauSoupCountDownConfig;
                         //add iridium starfruit to soup
-                        var item = new SObject(268, 1, false, -1, 3);
+                        var item = new SObject("268", 1, false, -1, 3);
                         this.Helper.Reflection.GetMethod(new Event(), "addItemToLuauSoup").Invoke(item, Game1.player);
                         eventCommandUsed = false;
                     }
@@ -549,7 +556,7 @@ namespace Always_On_Server
                         this.SendChatMessage($"The Soup Tasting will begin in {chatSoup:0.#} minutes.");
 
                         //add iridium starfruit to soup
-                        var item = new SObject(268, 1, false, -1, 3);
+                        var item = new SObject("268", 1, false, -1, 3);
                         this.Helper.Reflection.GetMethod(new Event(), "addItemToLuauSoup").Invoke(item, Game1.player);
                     }
 
@@ -955,9 +962,9 @@ namespace Always_On_Server
                     pet.displayName = this.Config.petname.Substring(0);
                 }
                 //cave choice unlock 
-                if (!Game1.player.eventsSeen.Contains(65))
+                if (!Game1.player.eventsSeen.Contains("65"))
                 {
-                    Game1.player.eventsSeen.Add(65);
+                    Game1.player.eventsSeen.Add("65");
 
 
                     if (this.Config.farmcavechoicemushrooms)
@@ -971,10 +978,10 @@ namespace Always_On_Server
                     }
                 }
                 //community center unlock
-                if (!Game1.player.eventsSeen.Contains(611439))
+                if (!Game1.player.eventsSeen.Contains("611439"))
                 {
 
-                    Game1.player.eventsSeen.Add(611439);
+                    Game1.player.eventsSeen.Add("611439");
                     Game1.MasterPlayer.mailReceived.Add("ccDoorUnlock");
                 }
                 if (this.Config.upgradeHouse != 0 && Game1.player.HouseUpgradeLevel != this.Config.upgradeHouse)
@@ -1148,8 +1155,8 @@ namespace Always_On_Server
                             int items3 = items1 + items2;
                             if (items3 >= 60)
                             {
-                                Game1.player.eventsSeen.Add(295672);
-                                Game1.player.eventsSeen.Add(66);
+                                Game1.player.eventsSeen.Add("295672");
+                                Game1.player.eventsSeen.Add("66");
                                 Game1.player.hasRustyKey = true;
                             }
                         }
@@ -1158,12 +1165,12 @@ namespace Always_On_Server
                         //community center complete
                         if (this.Config.communitycenterrun)
                         {
-                            if (!Game1.player.eventsSeen.Contains(191393) && Game1.player.mailReceived.Contains("ccCraftsRoom") && Game1.player.mailReceived.Contains("ccVault") && Game1.player.mailReceived.Contains("ccFishTank") && Game1.player.mailReceived.Contains("ccBoilerRoom") && Game1.player.mailReceived.Contains("ccPantry") && Game1.player.mailReceived.Contains("ccBulletin"))
+                            if (!Game1.player.eventsSeen.Contains("191393") && Game1.player.mailReceived.Contains("ccCraftsRoom") && Game1.player.mailReceived.Contains("ccVault") && Game1.player.mailReceived.Contains("ccFishTank") && Game1.player.mailReceived.Contains("ccBoilerRoom") && Game1.player.mailReceived.Contains("ccPantry") && Game1.player.mailReceived.Contains("ccBulletin"))
                             {
                                 CommunityCenter locationFromName = Game1.getLocationFromName("CommunityCenter") as CommunityCenter;
                                 for (int index = 0; index < locationFromName.areasComplete.Count; ++index)
                                     locationFromName.areasComplete[index] = true;
-                                Game1.player.eventsSeen.Add(191393);
+                                Game1.player.eventsSeen.Add("191393");
 
                             }
                         }
@@ -1220,7 +1227,7 @@ namespace Always_On_Server
                                 Game1.player.mailReceived.Add("ccVault");
                                 Game1.player.mailReceived.Add("jojaVault");
                                 this.SendChatMessage("Buying Joja Bus");
-                                Game1.player.eventsSeen.Add(502261);
+                                Game1.player.eventsSeen.Add("502261");
                             }
                         }
 
@@ -1231,7 +1238,7 @@ namespace Always_On_Server
                         Game1.warpFarmer("Farm", 64, 15, false);
                     }
                     //get fishing rod (standard spam clicker will get through cutscene)
-                    if (currentTime == 900 && !Game1.player.eventsSeen.Contains(739330))
+                    if (currentTime == 900 && !Game1.player.eventsSeen.Contains("739330"))
                     {
                         Game1.player.increaseBackpackSize(1);
                         Game1.warpFarmer("Beach", 1, 20, 1);
@@ -1248,7 +1255,7 @@ namespace Always_On_Server
 
 
                 //teleports to egg festival
-                Game1.player.team.SetLocalReady("festivalStart", true);
+                //Game1.player.team.SetLocalReady("festivalStart", true);
                 Game1.activeClickableMenu = new ReadyCheckDialog("festivalStart", true, who =>
                 {
                     Game1.exitActiveMenu();
@@ -1276,7 +1283,7 @@ namespace Always_On_Server
             if (currentTime >= 900 && currentTime <= 1400)
             {
 
-                Game1.player.team.SetLocalReady("festivalStart", true);
+                //Game1.player.team.SetLocalReady("festivalStart", true);
                 Game1.activeClickableMenu = new ReadyCheckDialog("festivalStart", true, who =>
                 {
                     Game1.exitActiveMenu();
@@ -1303,7 +1310,7 @@ namespace Always_On_Server
             if (currentTime >= 900 && currentTime <= 1400)
             {
 
-                Game1.player.team.SetLocalReady("festivalStart", true);
+                //Game1.player.team.SetLocalReady("festivalStart", true);
                 Game1.activeClickableMenu = new ReadyCheckDialog("festivalStart", true, who =>
                 {
                     Game1.exitActiveMenu();
@@ -1333,7 +1340,7 @@ namespace Always_On_Server
             {
 
 
-                Game1.player.team.SetLocalReady("festivalStart", true);
+                //Game1.player.team.SetLocalReady("festivalStart", true);
                 Game1.activeClickableMenu = new ReadyCheckDialog("festivalStart", true, who =>
                 {
                     Game1.exitActiveMenu();
@@ -1362,7 +1369,7 @@ namespace Always_On_Server
 
 
 
-                Game1.player.team.SetLocalReady("festivalStart", true);
+                //Game1.player.team.SetLocalReady("festivalStart", true);
                 Game1.activeClickableMenu = new ReadyCheckDialog("festivalStart", true, who =>
                 {
                     Game1.exitActiveMenu();
@@ -1395,7 +1402,7 @@ namespace Always_On_Server
 
 
 
-                Game1.player.team.SetLocalReady("festivalStart", true);
+                //Game1.player.team.SetLocalReady("festivalStart", true);
                 Game1.activeClickableMenu = new ReadyCheckDialog("festivalStart", true, who =>
                 {
                     Game1.exitActiveMenu();
@@ -1424,7 +1431,7 @@ namespace Always_On_Server
             {
 
 
-                Game1.player.team.SetLocalReady("festivalStart", true);
+                //Game1.player.team.SetLocalReady("festivalStart", true);
                 Game1.activeClickableMenu = new ReadyCheckDialog("festivalStart", true, who =>
                 {
                     Game1.exitActiveMenu();
@@ -1452,7 +1459,7 @@ namespace Always_On_Server
             {
 
 
-                Game1.player.team.SetLocalReady("festivalStart", true);
+                //Game1.player.team.SetLocalReady("festivalStart", true);
                 Game1.activeClickableMenu = new ReadyCheckDialog("festivalStart", true, who =>
                 {
                     Game1.exitActiveMenu();
@@ -1583,7 +1590,7 @@ namespace Always_On_Server
         /// <summary>Leave the current festival, if any.</summary>
         private void LeaveFestival()
         {
-            Game1.player.team.SetLocalReady("festivalEnd", true);
+            //Game1.player.team.SetLocalReady("festivalEnd", true);
             Game1.activeClickableMenu = new ReadyCheckDialog("festivalEnd", true, who =>
             {
                 getBedCoordinates();
