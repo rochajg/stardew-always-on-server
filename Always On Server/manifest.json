@@ -1,7 +1,7 @@
 {
   "Name": "Always On Server",
   "Author": "funny-snek & Zuberii & mikko_perkele",
-  "Version": "1.20.3",
+  "Version": "1.20.3-unofficial.1-mikkoperkele",
   "Description": "A Headless server mod.",
   "UniqueID": "mikko.Always_On_Server",
   "EntryDll": "Always On Server.dll",
