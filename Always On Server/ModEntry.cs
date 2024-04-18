@@ -33,7 +33,7 @@ namespace Always_On_Server
         public int bedX;
         public int bedY;
         public bool clientPaused;
-        private string lastInviteCode = null;
+        private string lastInviteCode;
 
         //debug tools
         private bool debug;
@@ -334,9 +334,13 @@ namespace Always_On_Server
         {
             // pause if no players present
             if (this.IsAutomating)
+            {
                 this.PauseIfNobodyPresent();
+            }
             else
-                Game1.paused = false;
+            {
+                Game1.netWorldState.Value.IsPaused = false;
+            }
 
             // toggle pause if requested
             if (this.IsAutomating && this.Config.clientsCanPause)
@@ -730,14 +734,18 @@ namespace Always_On_Server
                 if (numPlayers >= 1 || debug)
                 {
                     if (clientPaused)
+                    {
                         Game1.netWorldState.Value.IsPaused = true;
+                    }
                     else
-                        Game1.paused = false;
+                    {
+                        Game1.netWorldState.Value.IsPaused = false;
+                    }
 
                 }
                 else if (numPlayers <= 0 && Game1.timeOfDay >= 610 && Game1.timeOfDay <= 2500 && currentDate != eggFestival && currentDate != flowerDance && currentDate != luau && currentDate != danceOfJellies && currentDate != stardewValleyFair && currentDate != spiritsEve && currentDate != festivalOfIce && currentDate != feastOfWinterStar)
                 {
-                    Game1.paused = true;
+                    Game1.netWorldState.Value.IsPaused = true;
                 }
 
                 gameTicks = 0;
@@ -968,10 +976,7 @@ namespace Always_On_Server
                 }
 
                 // just turns off auto mod if the game gets exited back to title screen
-                if (Game1.activeClickableMenu is TitleMenu)
-                {
-                    IsAutomating = false;
-                }
+                IsAutomating &= !(Game1.activeClickableMenu is TitleMenu);
             }
         }
 
