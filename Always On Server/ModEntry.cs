@@ -720,7 +720,6 @@ namespace Always_On_Server
                         this.LeaveFestival();
                 }
             }
-        }
 
             // Skip level up menu
             if (IsAutomating && Game1.activeClickableMenu is LevelUpMenu)
