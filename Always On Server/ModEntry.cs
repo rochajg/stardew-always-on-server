@@ -25,7 +25,7 @@ namespace Always_On_Server
 
         private int gameTicks; //stores 1s game ticks for pause code
         private int skipTicks; //stores 1s game ticks for skip code
-        private int gameClockTicks; //stores in game clock change 
+        private int gameClockTicks; //stores in game clock change
         private int numPlayers; //stores number of players
 
         /// <summary>Whether the main player is currently being automated.</summary>
@@ -956,7 +956,7 @@ namespace Always_On_Server
                     pet.displayName = this.Config.petname.Substring(0);
                 }
 
-                //cave choice unlock 
+                //cave choice unlock
                 if (!Game1.player.eventsSeen.Contains("65"))
                 {
                     Game1.player.eventsSeen.Add("65");
@@ -1166,7 +1166,7 @@ namespace Always_On_Server
                             }
                         }
 
-                        //Joja run 
+                        //Joja run
                         if (!this.Config.communitycenterrun)
                         {
                             if (Game1.player.Money >= 10000 && !Game1.player.mailReceived.Contains("JojaMember"))
